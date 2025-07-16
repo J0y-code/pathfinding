@@ -88,3 +88,4 @@ app.run()
   <source src="video/samples_wandering.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
+![Demo animation](video/samples_wandering.mp4.gif)
