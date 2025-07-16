@@ -36,8 +36,8 @@ This module implements a 3D pathfinding system using the A* algorithm in a Panda
 }
 <Crossroad> {1}
 <Peripheral> {2}
-
-
+'''
+'''python
 ## Example usage
 
 from direct.showbase.ShowBase import ShowBase
@@ -76,4 +76,4 @@ class MyApp(ShowBase):
 
 app = MyApp()
 app.run()
-
+'''
