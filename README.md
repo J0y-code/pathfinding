@@ -36,7 +36,11 @@ This module implements a 3D pathfinding system using the A* algorithm in a Panda
 }
 <Crossroad> {1}
 <Peripheral> {2}
-'''
+
+
+
+
+
 '''python
 ## Example usage
 
