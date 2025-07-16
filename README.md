@@ -83,9 +83,4 @@ app.run()
 
 [Download and watch the demo video](video/samples_wandering.mp4)
 
-<!-- Ou essayer ceci (pas garanti de marcher sur GitHub) -->
-<video width="640" height="360" controls>
-  <source src="video/samples_wandering.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
-![Demo animation](video/samples_wandering.mp4.gif)
+[Demo animation](video/samples_wandering.mp4.gif)
