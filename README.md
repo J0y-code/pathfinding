@@ -83,4 +83,4 @@ app.run()
 
 [Download and watch the demo video](video/samples_wandering.mp4)
 
-[Demo animation](video/samples_wandering.gif)
+![Demo animation](video/samples_wandering.gif)
