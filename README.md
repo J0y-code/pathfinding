@@ -20,6 +20,15 @@ This module implements a 3D pathfinding system using the A* algorithm in a Panda
   - `move_along_path(task)`: Moves the AI along the path over time
   - `updateAi(task)`: Re-evaluates the player's position and updates the goal
 
+## How to create a psf file
+
+1.import as an add-on "PSF_exporter.py" for blender 4.x
+
+2.create a flat ground (plan) and subdivise into multiples faces, and select the ground
+
+3.go to export and find export_scene.pds and select selected only and export
+
+PS: sorry if there are some element in french
 
 ## a .pfs file
 
