@@ -65,7 +65,7 @@ class MyApp(ShowBase):
         self.enemy.aitarg = self.player
 
         # Start AI behavior
-        self.taskMgr.do_method_later(0.5, self.enemy.updateAi, "UpdateAITask")
+        self.taskMgr.do_method_later(0.5, self.enemy.follow, "UpdateAITask")
         self.taskMgr.add(self.enemy.move_along_path, "MoveAIPathTask")
 
         # Optional: Move the player slightly every frame
