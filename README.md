@@ -28,6 +28,8 @@ This module implements a 3D pathfinding system using the A* algorithm in a Panda
 
 3.go to export and find export_scene.pds and select selected only and export
 
+/!\ other objects in the scene that are not selected will be considered as obstacles.
+
 PS: sorry if there are some element in french
 
 ## a .pfs file
