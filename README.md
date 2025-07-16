@@ -19,9 +19,29 @@ This module implements a 3D pathfinding system using the A* algorithm in a Panda
   - `astar(start, goal)`: Calculates the shortest path using A*
   - `move_along_path(task)`: Moves the AI along the path over time
   - `updateAi(task)`: Re-evaluates the player's position and updates the goal
-## python usage
 
-'''python
+
+## a .pfs file
+
+```pfs
+<Point> 1 {
+  <x> {0}
+  <y> {0}
+  <z> {0}
+  <Tag> [start]
+}
+<Point> 2 {
+  <x> {5}
+  <y> {0}
+  <z> {0}
+}
+<Crossroad> {1}
+<Peripheral> {2}
+```
+
+## Python Usage Example
+
+```python
 from direct.showbase.ShowBase import ShowBase
 from pathfinding import PFSParser, Ai
 from panda3d.core import Vec3
@@ -57,20 +77,4 @@ class MyApp(ShowBase):
 
 app = MyApp()
 app.run()
-
-## Example `.pfs` Format
-
-```pfs
-<Point> 1 {
-  <x> {0}
-  <y> {0}
-  <z> {0}
-  <Tag> [start]
-}
-<Point> 2 {
-  <x> {5}
-  <y> {0}
-  <z> {0}
-}
-<Crossroad> {1}
-<Peripheral> {2}
+```
