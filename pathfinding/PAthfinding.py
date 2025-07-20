@@ -1,12 +1,13 @@
-import heapq, re, sys, os
-from panda3d.core import Vec3, NodePath
-import astar_module
+__author__ = "Nathan Pflieger-Chakma"
 
 """attention the code is not finished, 
 there will be modifications, 
 I advise you to check if the repository has been updated, 
 you can also modify the code if you want."""
 
+import heapq, re, sys, os
+from panda3d.core import Vec3, NodePath
+import astar_module
 
 class PFSParser:
     def __init__(self, filename):
