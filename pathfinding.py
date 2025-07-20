@@ -10,13 +10,8 @@ import re
 import heapq
 
 import sys, os
-from panda3d.core import Vec3
-
-
-from panda3d.core import (
-    Point3, LineSegs, NodePath, LColor, CollisionTraverser, CollisionNode,
-    CollisionRay, CollisionHandlerQueue, CollisionSphere, BitMask32, DirectionalLight, Vec3
-)
+from panda3d.core import Vec3, NodePath
+import astar_module
 
 class PFSParser:
     def __init__(self, filename):
@@ -87,12 +82,12 @@ class PFSParser:
 class Ai:
     def __init__(self, points, graph, model=None, start_id=None):
         # model initialisation
+        self.debug = False
         self.Ai_node = NodePath("Ai_n")
         self.Ai_node.reparentTo(render)
         self.model = model
         self.model.reparentTo(self.Ai_node)
         
-        #
         self.points = points
         self.graph = graph
         self.start_id = start_id
@@ -100,14 +95,30 @@ class Ai:
         self.current_target_index = 0
         self.path = []
         self.interrupt_path = False
+        self.start_pos = None
+        self.spawn_pos = Vec3(self.Ai_node.getPos())
+
+        if start_id:
+            self.start_pos = self.points[self.start_id]['pos']
+            self.Ai_node.setPos(*self.start_pos)
+            self.spawn_pos = Vec3(self.start_pos) if self.start_pos else Vec3(0,0,0)
 
         #Ai parameters
         self.speed = 5.0
         self.aitarg = None
+        
+        # wandering parameters
+        # Par défaut, on considère rayon 50 unités (à adapter)
+        self.wander_radius = 2
+        # Si tu veux choisir si le rayon est autour du spawn ou de la position actuelle
+        self.use_spawn_as_center = True  # True = spawn, False = position actuelle
+        self.last_targets = []
+
 
     def set_new_goal(self, pid):
         if not self.points or pid not in self.points:
-            print("invalid point.")
+            if self.debug:
+                print("invalid point.")
             return
 
         current_pos = Vec3(self.Ai_node.getPos())
@@ -117,7 +128,8 @@ class Ai:
         )
 
         if pid == closest_id:
-            print("goal point is the actual position.")
+            if self.debug:
+                print("goal point is the actual position.")
             return
 
         self.start_id = closest_id
@@ -125,15 +137,15 @@ class Ai:
         new_path = self.astar(self.start_id, self.goal_id)
 
         if new_path:
-            print(f"New path : {' -> '.join(map(str, new_path))}")
+            if self.debug:
+                print(f"New path : {' -> '.join(map(str, new_path))}")
             self.path = new_path
             self.current_target_index = 0
             self.interrupt_path = True  # Signal to restart movement immediately
         else:
-            print("No path found.")
+            if self.debug:
+                print("No path found.")
             self.path = []
-
-            
             
 
     def check_cible_movement(self, cible):
@@ -142,8 +154,9 @@ class Ai:
         current_pos = self.cible.getPos(render)
 
         if (current_pos - player_last_pos).lengthSquared() > 0.0001:
-            print("Le joueur a bougé.")
-            print(f"[DEBUG] Player moved: {moved}")
+            if self.debug:
+                print("Le joueur a bougé.")
+                print(f"[DEBUG] Player moved: {moved}")
             player_last_pos = current_pos  # Met à jour pour la prochaine frame
         return True
     
@@ -151,7 +164,7 @@ class Ai:
     def clpToobject(self, cible):
         # Si c'est un Player, on récupère self.model
         if hasattr(cible, 'model'):
-            cible = cible.model
+            cible = cible
 
         player_pos = cible.getPos(render)
 
@@ -159,15 +172,15 @@ class Ai:
             self.points,
             key=lambda pid: (Vec3(*self.points[pid]['pos']) - player_pos).lengthSquared()
         )
-
-        print(f"Closest point to player is ID {closest_id} at {self.points[closest_id]['pos']}")
+        if self.debug:
+            print(f"Closest point to player is ID {closest_id} at {self.points[closest_id]['pos']}")
         return closest_id
-
 
 
     def move_along_path(self, task):
         if not self.path or self.current_target_index >= len(self.path) - 1:
-            print('no path found')
+            if self.debug:
+                print('no path found')
             return task.cont
 
         if self.interrupt_path:
@@ -190,41 +203,12 @@ class Ai:
         return task.cont
 
 
-
     def heuristic(self, p1, p2):
         return sum(abs(a - b) for a, b in zip(p1, p2))
 
     def astar(self, start, goal):
-        open_set = []
-        heapq.heappush(open_set, (0, start))
-        came_from = {}
-        g_score = {node: float('inf') for node in self.graph}
-        g_score[start] = 0
-        f_score = {node: float('inf') for node in self.graph}
-        f_score[start] = self.heuristic(self.points[start]['pos'], self.points[goal]['pos'])
-
-        while open_set:
-            _, current = heapq.heappop(open_set)
-            if current == goal:
-                path = [current]
-                while current in came_from:
-                    current = came_from[current]
-                    path.append(current)
-                return list(reversed(path))
-
-            for neighbor in self.graph.get(current, []):
-                tentative_g = g_score[current] + self.heuristic(
-                    self.points[current]['pos'], self.points[neighbor]['pos']
-                )
-                if tentative_g < g_score[neighbor]:
-                    came_from[neighbor] = current
-                    g_score[neighbor] = tentative_g
-                    f_score[neighbor] = tentative_g + self.heuristic(
-                        self.points[neighbor]['pos'], self.points[goal]['pos']
-                    )
-                    heapq.heappush(open_set, (f_score[neighbor], neighbor))
-
-        return None
+        point_dict = {pid: list(data['pos']) for pid, data in self.points.items()}
+        return astar_module.astar(start, goal, self.graph, point_dict)
         
     def follow(self, task):
         if not self.aitarg:
@@ -236,37 +220,64 @@ class Ai:
 
         return task.again
 
-    def wanderer(self, task):
-        from random import randint
-        self.set_new_goal(randint(1,400))
 
-        return task.again
+    def wanderer(self, high_pid=None, task=None):
+        import random
+        if not self.points:
+            if self.debug:
+                print("[WARN] No points available.")
+            return task.again if task else None
 
-    
+        # Choix du centre de recherche
+        if self.use_spawn_as_center:
+            center = self.spawn_pos
+        else:
+            center = Vec3(self.Ai_node.getPos())
 
+        # Filtrer les points dans le rayon
+        valid_ids = []
+        for pid, data in self.points.items():
+            pos = Vec3(*data['pos'])
+            if (pos - center).length() <= self.wander_radius:
+                valid_ids.append(pid)
+
+        if high_pid is not None:
+            valid_ids = [pid for pid in valid_ids if pid <= high_pid]
+            if not valid_ids:
+                if self.debug:
+                    print(f"[WARN] No valid points under ID {high_pid} in radius")
+                return task.again if task else None
+
+        # Eviter de revenir sur les derniers points (optionnel)
+        candidates = [pid for pid in valid_ids if pid not in self.last_targets[-5:]]
+        if not candidates:
+            candidates = valid_ids
+
+        target_id = random.choice(candidates)
+        if self.debug:
+            print(f"[AI] Wandering to ID {target_id} within radius {self.wander_radius} at center {center}")
+        self.set_new_goal(target_id)
+
+        self.last_targets.append(target_id)
+        if len(self.last_targets) > 10:
+            self.last_targets.pop(0)
+
+        return task.again if task else None
 
         
 if __name__ == "__main__":
-    PFS_env = PFSParser("level1.pfs")
-    points, graph = PFS_env.load()
-    
+    env = PFSParser("level1.pfs")
+    points, graph = env.load()
 
-    
-    from direct.showbase.ShowBase import *
-    from panda3d.core import *
-    from direct.task import Task
-    from random import randint
-    from time import sleep
-    
-    Test = ShowBase()
+    app = ShowBase()
     model = loader.loadModel('playertest.egg')
 
-    ai = Ai(points=points, graph=graph, model=model, start_id=1)
+    ai = Ai(points, graph, model, start_id=240)
     ai.speed = 5
+    ai.debug = True
+    ai.wander_radius = 25  # rayon élargi
+    ai.use_spawn_as_center = False
 
-    ai.set_new_goal(240)
-    Test.taskMgr.add(ai.move_along_path, "MoveTask")
-
-    Test.taskMgr.do_method_later(5, ai.wanderer, "MoveTask")
-    
-    Test.run()
+    app.taskMgr.add(ai.move_along_path, "MoveTask")
+    app.taskMgr.do_method_later(5, ai.wanderer, "WanderTask", extraArgs=[400], appendTask=True)
+    app.run()
