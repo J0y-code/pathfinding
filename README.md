@@ -48,6 +48,7 @@ PS: sorry if there are some element in french
 }
 <Crossroad> {1}
 <Peripheral> {2}
+<Cost> {1}
 ```
 
 ## Python Usage Example
