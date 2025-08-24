@@ -35,20 +35,26 @@ PS: sorry if there are some element in french
 ## a .pfs file
 
 ```pfs
-<Point> 1 {
-  <x> {0}
-  <y> {0}
-  <z> {0}
-  <Tag> [start]
+<Area> [name] {
+  <Group_of_Points> {
+    <Point> 1 {
+      <x> {0}
+      <y> {0}
+      <z> {0}
+      <Tag> [start]
+    }
+    <Point> 2 {
+      <x> {5}
+      <y> {0}
+      <z> {0}
+    }
+  }
+  <Relate> {
+    <Crossroad> {1}
+    <Peripheral> {2}
+    <Cost> {1}
+  }
 }
-<Point> 2 {
-  <x> {5}
-  <y> {0}
-  <z> {0}
-}
-<Crossroad> {1}
-<Peripheral> {2}
-<Cost> {1}
 ```
 
 ## Python Usage Example
