@@ -103,7 +103,7 @@ class MyApp(ShowBase):
 
         # Initialize the AI
         ai_model = loader.loadModel("models/enemy.egg")
-        self.enemy = Ai(points=self.points, graph=self.graph, areas=self.areas, model=ai_model, world=None, use_bullet=False)
+        self.enemy = Ai(points=points, graph=graph, areas=areas, model=ai_model, world=None, use_bullet=False)
         self.enemy.aitarg = self.player
 
         # Start AI behavior
