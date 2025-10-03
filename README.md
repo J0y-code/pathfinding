@@ -35,26 +35,50 @@ PS: sorry if there are some element in french
 ## a .pfs file
 
 ```pfs
-<Area> [name] {
-  <Group_of_Points> {
-    <Point> 1 {
-      <x> {0}
-      <y> {0}
-      <z> {0}
-      <Tag> [start]
+<< Exported by Blender PFS Exporter >>
+
+<Area> [AreaName] {
+
+  <SubArea> [SubArea1] {
+    <Group_of_Points> {
+      <Point> 1 {
+        <x> {0.0}
+        <y> {0.0}
+        <z> {0.0}
+        <Tag> [start]
+      }
+      <Point> 2 {
+        <x> {1.0}
+        <y> {0.0}
+        <z> {0.0}
+      }
     }
-    <Point> 2 {
-      <x> {5}
-      <y> {0}
-      <z> {0}
+    <Connections> {
+      <Relate> {
+        <Crossroad> {1}
+        <Peripheral> {2}
+      }
     }
   }
-  <Relate> {
-    <Crossroad> {1}
-    <Peripheral> {2}
-    <Cost> {1}
+
+  <SubArea> [SubArea2] {
+    <Group_of_Points> {
+      <Point> 3 {
+        <x> {2.0}
+        <y> {0.0}
+        <z> {0.0}
+      }
+    }
+    <Connections> {
+      <Relate> {
+        <Crossroad> {2}
+        <Peripheral> {3}  # external link with SubArea1
+      }
+    }
   }
+
 }
+
 ```
 
 ## Python Usage Example
@@ -74,12 +98,12 @@ class MyApp(ShowBase):
         self.player.setPos(0, 0, 0)
 
         # Load navigation graph
-        parser = PFSParser("level1.pfs")
-        points, graph = parser.load()
+        parser = PFSParser("navpoint.pfs")
+        areas, points, graph = parser.load()
 
         # Initialize the AI
         ai_model = loader.loadModel("models/enemy.egg")
-        self.enemy = Ai(points=points, graph=graph, model=ai_model, start_id=1)
+        self.enemy = Ai(points=self.points, graph=self.graph, areas=self.areas, model=self.pnj, world=self.bullet_world, use_bullet=True)
         self.enemy.aitarg = self.player
 
         # Start AI behavior
